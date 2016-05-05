@@ -1,3 +1,5 @@
+#!/usr/bin/ruby
+
 ### Solution for Programming Puzzle Triangle
 # http://www.yodlecareers.com/programming-puzzle-triangle
 
@@ -8,59 +10,40 @@ require 'pry'
 
 start_time = Time.now
 
-def load_tri(file)
+TRI_FILE = 'triangle.txt'
+
+def load_tri
   @triangle = []
-  File.open(file).each_line do |line|
+  open(TRI_FILE).each_line do |line|
     @triangle.push(line.split(" ").collect { |n| n.to_i})
   end
   @triangle
 end
 
-def get_paths
-  binding.pry
-  paths = [0,1].repeated_permutation(@triangle.length - 1).to_a.map do |path|
-    [0].concat(path)
-  end
+def find_max_path_sum
+  load_tri
 
-  paths.map! do |path|
-    newp = []
-    path.each_with_index do |v, i|
-      newp.push path.slice(0, i+1).inject :+
+  max_sum = 0
+
+  [0,1].repeated_permutation(@triangle.length - 1).each do |p|
+    sum = 0
+    path = [0]
+    p.to_a.each_with_index do |v, i|
+      path.push p.to_a.slice(0, i+1).inject :+
     end
-    newp
+
+    path.each_with_index do |v, i|
+      sum += @triangle[i][v]
+    end
+    max_sum = sum if sum > max_sum
   end
-end
 
-def sum_paths
-  threads = []
-  sums = []
-  paths = get_paths
-  binding.pry
-
-  paths.each do |path|
-    #threads << Thread.new {
-      sum = 0
-      path.each_with_index do |v, i|
-        sum += @triangle[i][v]
-      end
-      sums << sum
-    #}
-  end
-  #threads.each { |t|
-  #  t.join
-  #}
-  sums
-end
-
-def max_path_sum_of(file)
-  load_tri(file)
-  sum_paths.max
+  max_sum
 end
 
 
-file = 'triangle.txt'
-max = max_path_sum_of(file)
-puts "The max sum for #{file} is #{max}"
+max = find_max_path_sum
+puts "The max sum for #{TRI_FILE} is #{max}"
 
-exec_time = (Time.now - start_time) #.strftime("%H:%M:%S")
-puts "Finished in #{exec_time} seconds"
+exec_time = (Time.now - start_time)
+puts "Finished in #{exec_time} seconds!"
